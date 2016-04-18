@@ -5,22 +5,6 @@ using System.Collections;
 
 using VectorList = System.Collections.Generic.List<UnityEngine.Vector3>;
 
-/*
-class SortYX : IComparer<RaycastHit>
-{
-    public int Compare(RaycastHit rh1, RaycastHit rh2)
-    {
-        if (rh1.point.y > rh2.point.y) return -1;
-        if (rh1.point.y < rh2.point.y) return  1;
-
-        if (rh1.point.x < rh2.point.x) return -1;
-        if (rh1.point.y > rh2.point.y) return 1;
-
-        Debug.Log("Colinear!");
-        return 0;
-    }
-}*/
-
 class Polygon
 {
     public VectorList pts = new VectorList(3);
@@ -164,17 +148,22 @@ public class Cuttable : MonoBehaviour
         return poly.UsesPoints(badPoints);
     }
 
-    //Create a quad and then cut a hole out of it given the provided points
-    public void CutConvexPolygon(List<Vector3> ptList)
+    public void CutQuad(List<Vector3> ptList)
     {
         // convert from world to model space
         for (int cutpoint = 0; cutpoint < ptList.Count; ++cutpoint)
         {
-            Vector3 model= transform.InverseTransformPoint(ptList[cutpoint]);
+            Vector3 model = transform.InverseTransformPoint(ptList[cutpoint]);
             model.z = -0.5f;
             ptList[cutpoint] = model;
         }
+        ptList= ConvexHull.CH2(ptList);
+        CutConvexPolygon(ptList);
+    }
 
+    //Create a quad and then cut a hole out of it given the provided points
+    void CutConvexPolygon(List<Vector3> ptList)
+    {
         // We start with a quad to cut the polygon into
         // quad matches the front face of a default unit cube
         var quad = new Polygon();
@@ -255,8 +244,6 @@ public class Cuttable : MonoBehaviour
         }
 #endif
         GenerateMesh(triList);
-        //visualize(new List<Polygon>(polys));
-        //StartCoroutine(visualize(ptList));
     }
 
     public int debugTriangle = 12;
@@ -306,19 +293,6 @@ public class Cuttable : MonoBehaviour
                 Debug.DrawLine(one, two, Color.cyan, 100f, false);
             }
     }
-
-
-    /*
-    IEnumerator visualize(VectorList ptList)
-    {
-        for (int i = 0; i < ptList.Count; ++i)
-        {
-            var ptCoord = ptList[i];
-            var go = Instantiate(debugObject, ptCoord, Quaternion.identity) as GameObject;
-            go.transform.localPosition += new Vector3(0, 0, -0.01f);
-            yield return new WaitForSeconds(1.0f);
-        }
-    }*/
 
     public bool Raycast(Ray ray, out RaycastHit hitInfo, float maxDistance)
     {

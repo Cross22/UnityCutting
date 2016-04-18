@@ -19,7 +19,7 @@ public class Cutter : MonoBehaviour {
     void FinishCutting()
     {
         this.enabled = false;
-        objectToCut.CutConvexPolygon(cutPoints);
+        objectToCut.CutQuad(cutPoints);
         cutPoints.Clear();
     }
 
